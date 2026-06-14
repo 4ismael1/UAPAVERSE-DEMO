@@ -47,7 +47,7 @@ export default function WelcomeOverlay({ onFinish }: { onFinish: () => void }) {
               Bienvenido a
             </motion.p>
 
-            <h1 className="font-display text-6xl font-extrabold leading-none text-white sm:text-8xl">
+            <h1 className="flex flex-nowrap items-end justify-center whitespace-nowrap font-display text-5xl font-extrabold leading-none text-white sm:text-8xl">
               {TITLE.split("").map((ch, i) => (
                 <motion.span
                   key={i}
@@ -58,7 +58,7 @@ export default function WelcomeOverlay({ onFinish }: { onFinish: () => void }) {
                     duration: 0.7,
                     ease: "easeOut",
                   }}
-                  className="inline-block bg-gradient-to-r from-uapa-sky via-white to-uapa-gold bg-clip-text text-transparent"
+                  className="bg-gradient-to-r from-uapa-sky via-white to-uapa-gold bg-clip-text text-transparent"
                 >
                   {ch}
                 </motion.span>

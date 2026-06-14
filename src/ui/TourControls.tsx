@@ -17,16 +17,18 @@ export default function TourControls() {
     <AnimatePresence>
       {tourActive && (
         <motion.div
-          initial={{ y: 60, opacity: 0 }}
+          initial={{ y: -40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 60, opacity: 0 }}
-          className="pointer-events-auto absolute bottom-4 left-1/2 z-30 w-[min(92vw,560px)] -translate-x-1/2"
+          exit={{ y: -40, opacity: 0 }}
+          // En móvil va arriba (para no chocar con el joystick); en escritorio abajo.
+          className="pointer-events-auto absolute left-1/2 z-30 w-[min(94vw,560px)] -translate-x-1/2 top-16 sm:top-auto sm:bottom-4"
         >
-          <div className="glass-strong flex items-center gap-3 rounded-2xl px-4 py-3">
+          <div className="glass-strong flex items-center gap-2 rounded-2xl px-2.5 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
             <button
               onClick={prev}
               disabled={tourIndex === 0}
-              className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-white transition hover:bg-white/15 disabled:opacity-30"
+              aria-label="Parada anterior"
+              className="shrink-0 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-lg text-white transition hover:bg-white/15 disabled:opacity-30"
             >
               ←
             </button>
@@ -41,7 +43,7 @@ export default function TourControls() {
               </div>
               <button
                 onClick={() => station && openStation(station)}
-                className="block w-full truncate font-display text-base font-bold text-white hover:underline"
+                className="block w-full truncate font-display text-sm font-bold text-white hover:underline sm:text-base"
               >
                 {station?.title}
               </button>
@@ -50,13 +52,15 @@ export default function TourControls() {
             <button
               onClick={next}
               disabled={tourIndex >= total - 1}
-              className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-white transition hover:bg-white/15 disabled:opacity-30"
+              aria-label="Siguiente parada"
+              className="shrink-0 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-lg text-white transition hover:bg-white/15 disabled:opacity-30"
             >
               →
             </button>
             <button
               onClick={stop}
-              className="rounded-xl bg-white/10 px-3 py-2 text-sm text-white/80 transition hover:bg-white/20"
+              aria-label="Salir del tour"
+              className="shrink-0 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/80 transition hover:bg-white/20"
             >
               Salir
             </button>
