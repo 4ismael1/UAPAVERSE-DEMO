@@ -40,6 +40,8 @@ export function useVoiceAssistant(context: string) {
   const rafRef = useRef<number>(0);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsUrlRef = useRef<string | null>(null);
+  const finalizeTimerRef = useRef<number>(0);
+  const isFinalizingRef = useRef(false);
 
   const supported =
     typeof navigator !== "undefined" &&
@@ -106,6 +108,7 @@ export function useVoiceAssistant(context: string) {
     const v = pickSpanishVoice();
     if (v) u.voice = v;
     u.onstart = () => {
+      setError("");
       setAnswer(text);
       setState("speaking");
     };
@@ -134,6 +137,7 @@ export function useVoiceAssistant(context: string) {
         const audio = new Audio(url);
         ttsAudioRef.current = audio;
         audio.onplay = () => {
+          setError("");
           setAnswer(text);
           setState("speaking");
         };
@@ -155,8 +159,11 @@ export function useVoiceAssistant(context: string) {
 
   // Procesa el PCM capturado en vivo (sin decodeAudioData) y consulta a Gemini.
   const finalizeRecording = useCallback(async () => {
+    if (isFinalizingRef.current) return;
+    isFinalizingRef.current = true;
     stopMeter();
     setState("processing");
+    setError("");
     const inputRate = sampleRateRef.current;
     const chunks = pcmChunksRef.current;
     pcmChunksRef.current = [];
@@ -164,7 +171,7 @@ export function useVoiceAssistant(context: string) {
     stopStream();
     try {
       const total = chunks.reduce((n, c) => n + c.length, 0);
-      if (total < inputRate * 0.2) {
+      if (total < inputRate * 0.15) {
         setError(
           "No capté tu voz. Mantén pulsado el botón mientras hablas y suéltalo al terminar."
         );
@@ -177,11 +184,13 @@ export function useVoiceAssistant(context: string) {
         merged.set(c, off);
         off += c.length;
       }
-      const { base64, mimeType, durationSec, rms } = pcmToWavBase64(
+      const { base64, mimeType, durationSec, peak } = pcmToWavBase64(
         merged,
         inputRate
       );
-      if (durationSec < 0.4 || rms < 0.0035) {
+      // Solo rechazamos si el audio es claramente vacío (sin señal real).
+      // La normalización ya amplifica voz bajita; dejamos que Gemini decida.
+      if (durationSec < 0.2 && peak < 0.0001) {
         setError(
           "No te escuché bien. Acerca el micrófono y habla un poco más fuerte mientras mantienes pulsado."
         );
@@ -189,11 +198,12 @@ export function useVoiceAssistant(context: string) {
         return;
       }
       const text = await askGeminiWithAudio(base64, mimeType, contextRef.current);
-      // El texto se mostrará justo cuando comience a sonar la voz (en speak).
       await speak(text);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error al procesar el audio");
       setState("error");
+    } finally {
+      isFinalizingRef.current = false;
     }
   }, [speak, stopMeter, stopStream, teardownAudio]);
 
@@ -210,6 +220,9 @@ export function useVoiceAssistant(context: string) {
     }
     setError("");
     setAnswer("");
+    window.clearTimeout(finalizeTimerRef.current);
+    finalizeTimerRef.current = 0;
+    isFinalizingRef.current = false;
     window.speechSynthesis?.cancel();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -268,16 +281,18 @@ export function useVoiceAssistant(context: string) {
   }, [supported, stopMeter, teardownAudio, stopStream]);
 
   const stopRecording = useCallback(() => {
-    if (processorRef.current) {
-      // Pequeño margen para capturar la última palabra antes de cerrar.
-      window.setTimeout(() => {
-        void finalizeRecording();
-      }, 160);
-    } else {
+    if (!processorRef.current) {
       stopMeter();
       teardownAudio();
       stopStream();
+      return;
     }
+    // Evita doble procesamiento (pointerup + pointerleave disparan a la vez).
+    window.clearTimeout(finalizeTimerRef.current);
+    finalizeTimerRef.current = window.setTimeout(() => {
+      finalizeTimerRef.current = 0;
+      void finalizeRecording();
+    }, 180);
   }, [finalizeRecording, stopMeter, teardownAudio, stopStream]);
 
   const stopSpeaking = useCallback(() => {
@@ -287,6 +302,9 @@ export function useVoiceAssistant(context: string) {
   }, [cleanupTtsAudio]);
 
   const reset = useCallback(() => {
+    window.clearTimeout(finalizeTimerRef.current);
+    finalizeTimerRef.current = 0;
+    isFinalizingRef.current = false;
     window.speechSynthesis?.cancel();
     cleanupTtsAudio();
     pcmChunksRef.current = [];

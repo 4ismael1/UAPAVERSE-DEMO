@@ -114,9 +114,14 @@ export function pcmToWavBase64(
   samples: Float32Array,
   inputRate: number,
   targetRate = 16000
-): { base64: string; mimeType: string; durationSec: number; rms: number } {
+): { base64: string; mimeType: string; durationSec: number; rms: number; peak: number } {
   const rate = Math.min(targetRate, inputRate);
   const down = downsample(samples, inputRate, rate);
+  let peak = 0;
+  for (let i = 0; i < down.length; i++) {
+    const a = Math.abs(down[i]);
+    if (a > peak) peak = a;
+  }
   const rms = rmsOf(down);
   const normalized = normalize(down);
   const wav = encodeWav(normalized, rate);
@@ -125,6 +130,7 @@ export function pcmToWavBase64(
     mimeType: "audio/wav",
     durationSec: samples.length / inputRate,
     rms,
+    peak,
   };
 }
 
