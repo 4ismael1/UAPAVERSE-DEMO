@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Text, Float, RoundedBox } from "@react-three/drei";
+import { Text, Float, RoundedBox, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Station } from "../data/feria";
@@ -201,22 +201,24 @@ function VideoPanel({
   );
 }
 
-// Emblema giratorio sobre la cabecera del stand
-function Emblem({ color, accent }: { color: string; accent: string }) {
-  const ref = useRef<THREE.Mesh>(null);
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += dt * 0.8;
-  });
+// Símbolo (isótopo) de CadeSoft sobre la cabecera del stand.
+function CadeSoftMark({ size = 0.7 }: { size?: number }) {
+  const tex = useTexture(`${import.meta.env.BASE_URL}cadesoft-iso.png`);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  const img = tex.image as { width: number; height: number } | undefined;
+  const aspect = img && img.height ? img.width / img.height : 1;
+  const h = size;
+  const w = size * aspect;
   return (
-    <mesh ref={ref}>
-      <octahedronGeometry args={[0.16, 0]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={accent}
-        emissiveIntensity={0.9}
-        metalness={0.6}
-        roughness={0.25}
+    <mesh>
+      <planeGeometry args={[w, h]} />
+      <meshBasicMaterial
+        map={tex}
+        transparent
+        alphaTest={0.02}
         toneMapped={false}
+        depthWrite={false}
       />
     </mesh>
   );
@@ -473,10 +475,10 @@ export default function Stand({ station }: { station: Station }) {
         {station.carreraName.toUpperCase()}
       </Text>
 
-      {/* emblema giratorio */}
-      <group position={[0, H + 0.6, pillarZ]}>
+      {/* símbolo CadeSoft sobre la cabecera */}
+      <group position={[0, H + 0.62, pillarZ + 0.12]}>
         <Float speed={2} floatIntensity={0.4} rotationIntensity={0}>
-          <Emblem color={col} accent={accent} />
+          <CadeSoftMark size={0.78} />
         </Float>
       </group>
 

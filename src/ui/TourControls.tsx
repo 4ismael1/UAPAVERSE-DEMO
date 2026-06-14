@@ -17,11 +17,11 @@ export default function TourControls() {
     <AnimatePresence>
       {tourActive && (
         <motion.div
-          initial={{ y: -40, opacity: 0 }}
+          initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -40, opacity: 0 }}
-          // En móvil va arriba (para no chocar con el joystick); en escritorio abajo.
-          className="pointer-events-auto absolute left-1/2 z-30 w-[min(94vw,560px)] -translate-x-1/2 top-16 sm:top-auto sm:bottom-4"
+          exit={{ y: 40, opacity: 0 }}
+          // En móvil va abajo pero por ENCIMA del joystick; en escritorio, abajo.
+          className="pointer-events-auto absolute left-1/2 z-40 w-[min(94vw,520px)] -translate-x-1/2 bottom-44 sm:bottom-4"
         >
           <div className="glass-strong flex items-center gap-2 rounded-2xl px-2.5 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
             <button

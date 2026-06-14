@@ -107,6 +107,25 @@ export default function Intro() {
           <b className="text-slate-200">E</b> para abrir un stand. En móvil: usa
           el joystick y arrastra para mirar.
         </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.95, duration: 0.8 }}
+          className="mt-9 flex items-center justify-center gap-6"
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}logo.png`}
+            alt="UAPA"
+            className="h-9 w-auto opacity-90 sm:h-11"
+          />
+          <span className="h-8 w-px bg-white/20" />
+          <img
+            src={`${import.meta.env.BASE_URL}cadesoft.png`}
+            alt="CadeSoft"
+            className="h-7 w-auto opacity-90 sm:h-9"
+          />
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -14,19 +14,21 @@ const CENTER_Z = (FRONT_Z + BACK_Z) / 2;
 const HW = HALL_WIDTH / 2;
 const CEIL = 6.2;
 
-// Logo de la UAPA (PNG con letras blancas, fondo transparente) sobre la pared.
+// Logo (PNG con letras blancas, fondo transparente) sobre la pared.
 function LogoSign({
+  src = "logo.png",
   position,
   rotation = [0, 0, 0],
   height = 1.6,
   maxWidth = Infinity,
 }: {
+  src?: string;
   position: [number, number, number];
   rotation?: [number, number, number];
   height?: number;
   maxWidth?: number;
 }) {
-  const tex = useTexture(`${import.meta.env.BASE_URL}logo.png`);
+  const tex = useTexture(`${import.meta.env.BASE_URL}${src}`);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   const img = tex.image as { width: number; height: number } | undefined;
@@ -214,11 +216,35 @@ export default function Pavilion({
         <planeGeometry args={[HALL_WIDTH, CEIL]} />
         <meshStandardMaterial color="#141f38" roughness={0.9} />
       </mesh>
-      <LogoSign
-        position={[0, CEIL / 2 + 0.3, BACK_Z + 0.08]}
-        height={1.7}
-        maxWidth={HALL_WIDTH - 3}
-      />
+      <group position={[0, 0, BACK_Z + 0.08]}>
+        {/* nombre del proyecto */}
+        <Text
+          position={[0, 4.9, 0]}
+          fontSize={0.78}
+          anchorX="center"
+          anchorY="middle"
+          color="#ffffff"
+          outlineWidth={0.012}
+          outlineColor="#1d6fd6"
+          letterSpacing={0.02}
+        >
+          UAPAverse
+        </Text>
+        <Text
+          position={[0, 4.25, 0]}
+          fontSize={0.22}
+          anchorX="center"
+          anchorY="middle"
+          color="#7ec8ff"
+          letterSpacing={0.22}
+        >
+          NOMBRE DEL PROYECTO
+        </Text>
+
+        {/* logos: UAPA y CadeSoft */}
+        <LogoSign src="logo.png" position={[-3.6, 2.7, 0]} height={1.7} maxWidth={6} />
+        <LogoSign src="cadesoft.png" position={[3.6, 2.7, 0]} height={1.7} maxWidth={6} />
+      </group>
 
       {/* ===== ENTRADA (pared frontal con título) ===== */}
       <mesh position={[0, CEIL / 2, FRONT_Z]} rotation={[0, Math.PI, 0]}>
