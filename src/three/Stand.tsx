@@ -150,6 +150,7 @@ function VideoPanel({
   height,
   position,
   accent,
+  canOpen,
   onOpen,
   onHover,
 }: {
@@ -159,6 +160,7 @@ function VideoPanel({
   height: number;
   position: [number, number, number];
   accent: string;
+  canOpen: boolean;
   onOpen: () => void;
   onHover: (v: boolean) => void;
 }) {
@@ -178,6 +180,9 @@ function VideoPanel({
       <mesh
         position={[x, y, z + 0.08]}
         onClick={(e) => {
+          // Solo abre si estás cerca; si no, deja pasar el clic para bloquear
+          // el puntero y girar la cámara.
+          if (!canOpen) return;
           e.stopPropagation();
           onOpen();
         }}
@@ -494,6 +499,7 @@ export default function Stand({ station }: { station: Station }) {
             height={1.7}
             position={[-W / 4 - 0.1, 1.6, ZW]}
             accent={accent}
+            canOpen={isNear}
             onOpen={open}
             onHover={setHovered}
           />
@@ -589,6 +595,7 @@ export default function Stand({ station }: { station: Station }) {
             height={1.7}
             position={[-W / 4 - 0.1, 1.95, ZW]}
             accent={accent}
+            canOpen={isNear}
             onOpen={open}
             onHover={setHovered}
           />
@@ -650,10 +657,11 @@ export default function Stand({ station }: { station: Station }) {
         </>
       )}
 
-      {/* zona de interacción general */}
+      {/* zona de interacción general (solo activa si estás cerca) */}
       <mesh
         position={[0, 1.4, D / 2 + 0.12]}
         onClick={(e) => {
+          if (!isNear) return; // deja pasar el clic para bloquear el puntero
           e.stopPropagation();
           open();
         }}

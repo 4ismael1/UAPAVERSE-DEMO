@@ -6,18 +6,19 @@ const TITLE = "UAPAverse";
 
 /**
  * Secuencia cinemática "Bienvenido a UAPAverse" que aparece al entrar a la
- * feria y se desvanece sola tras unos segundos (o al hacer clic).
+ * feria. Se reproduce SOLA (sin la escena 3D montada) para que no se trabe;
+ * al terminar llama a `onFinish`, momento en el que se monta la escena.
  */
-export default function WelcomeOverlay() {
+export default function WelcomeOverlay({ onFinish }: { onFinish: () => void }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setVisible(false), 5200);
+    const t = window.setTimeout(() => setVisible(false), 4400);
     return () => window.clearTimeout(t);
   }, []);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onFinish}>
       {visible && (
         <motion.div
           className="absolute inset-0 z-[60] flex items-center justify-center overflow-hidden"

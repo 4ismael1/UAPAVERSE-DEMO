@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Station } from "./data/feria";
+import { STATIONS, type Station } from "./data/feria";
 
 export type Phase = "intro" | "running";
 export type Quality = "alto" | "rendimiento";
@@ -100,5 +100,5 @@ export const useFeria = create<FeriaState>((set, get) => ({
   teleportTo: null,
   consumeTeleport: () => set({ teleportTo: null }),
 
-  totalStands: 0,
+  totalStands: STATIONS.length,
 }));
