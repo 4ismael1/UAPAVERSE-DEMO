@@ -89,13 +89,13 @@ function ZoneArch({
       </mesh>
       <Text
         position={[0, CEIL - 0.5, 0.32]}
-        fontSize={0.5}
+        fontSize={0.4}
         anchorX="center"
         anchorY="middle"
         color="#ffffff"
         outlineWidth={0.01}
         outlineColor={accent}
-        maxWidth={HALL_WIDTH - 2}
+        maxWidth={HALL_WIDTH - 1.2}
         textAlign="center"
       >
         {label.toUpperCase()}
@@ -104,25 +104,34 @@ function ZoneArch({
   );
 }
 
-export default function Pavilion() {
+export default function Pavilion({
+  highQuality = true,
+}: {
+  highQuality?: boolean;
+}) {
   return (
     <group>
-      {/* ===== SUELO reflectante ===== */}
+      {/* ===== SUELO ===== */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, CENTER_Z]} receiveShadow>
         <planeGeometry args={[HALL_WIDTH, HALL_LENGTH]} />
-        <MeshReflectorMaterial
-          resolution={1024}
-          mirror={0.45}
-          blur={[300, 80]}
-          mixBlur={1}
-          mixStrength={2.2}
-          roughness={0.85}
-          depthScale={1}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.2}
-          color="#10182e"
-          metalness={0.5}
-        />
+        {highQuality ? (
+          <MeshReflectorMaterial
+            resolution={512}
+            mirror={0.4}
+            blur={[140, 50]}
+            mixBlur={0.9}
+            mixStrength={1.9}
+            roughness={0.88}
+            depthScale={1}
+            minDepthThreshold={0.4}
+            maxDepthThreshold={1.2}
+            color="#10182e"
+            metalness={0.5}
+          />
+        ) : (
+          // Modo rendimiento: suelo pulido sin reflejo (mucho más barato).
+          <meshStandardMaterial color="#141d33" roughness={0.6} metalness={0.35} />
+        )}
       </mesh>
 
       {/* línea central del pasillo */}
@@ -220,7 +229,7 @@ export default function Pavilion() {
           z={s.position[2] + 4.2}
           color={s.color}
           accent={s.accent}
-          label={s.carreraShort}
+          label={s.carreraName}
         />
       ))}
 

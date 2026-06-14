@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useVoiceAssistant, type VoiceState } from "../ai/useVoiceAssistant";
+import { IconRobot, IconSpeaker, IconMic, IconStop } from "./icons";
 
 const LABELS: Record<VoiceState, string> = {
   idle: "Mantén pulsado para preguntar",
@@ -64,7 +65,7 @@ export default function VoiceAssistant({
             />
           )}
           <motion.div
-            className="absolute inset-1 flex items-center justify-center rounded-full text-2xl"
+            className="absolute inset-1 flex items-center justify-center rounded-full text-white"
             style={{
               background: `radial-gradient(circle at 35% 30%, ${accent}, ${color})`,
               boxShadow: `0 0 24px ${color}aa`,
@@ -73,6 +74,7 @@ export default function VoiceAssistant({
             transition={{ duration: 0.08 }}
           >
             <motion.span
+              className="flex items-center justify-center"
               animate={
                 processing
                   ? { rotate: 360 }
@@ -86,7 +88,13 @@ export default function VoiceAssistant({
                   : { duration: 0.5, repeat: Infinity }
               }
             >
-              {processing ? "◌" : speaking ? "🔊" : "🤖"}
+              {processing ? (
+                <span className="block h-6 w-6 rounded-full border-2 border-white/40 border-t-white" />
+              ) : speaking ? (
+                <IconSpeaker size={28} />
+              ) : (
+                <IconRobot size={30} />
+              )}
             </motion.span>
           </motion.div>
         </div>
@@ -133,7 +141,7 @@ export default function VoiceAssistant({
           onPointerCancel={up}
           onContextMenu={(e) => e.preventDefault()}
           disabled={processing}
-          className="relative flex h-16 w-16 shrink-0 select-none items-center justify-center rounded-full text-2xl text-white transition active:scale-95 disabled:opacity-50"
+          className="relative flex h-16 w-16 shrink-0 select-none items-center justify-center rounded-full text-white transition active:scale-95 disabled:opacity-50"
           style={{
             background: recording
               ? "linear-gradient(160deg,#ef4444,#b91c1c)"
@@ -145,7 +153,15 @@ export default function VoiceAssistant({
           }}
           title="Mantén pulsado para hablar"
         >
-          {recording ? "●" : "🎤"}
+          {recording ? (
+            <motion.span
+              className="block h-4 w-4 rounded-full bg-white"
+              animate={{ scale: [1, 0.7, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          ) : (
+            <IconMic size={28} />
+          )}
         </button>
       </div>
 
@@ -160,9 +176,9 @@ export default function VoiceAssistant({
           {speaking && (
             <button
               onClick={va.stopSpeaking}
-              className="ml-2 rounded-md bg-white/10 px-2 py-0.5 text-xs text-white/80 hover:bg-white/20"
+              className="ml-2 inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 text-xs text-white/80 hover:bg-white/20"
             >
-              ⏹ Detener
+              <IconStop size={12} /> Detener
             </button>
           )}
         </motion.div>

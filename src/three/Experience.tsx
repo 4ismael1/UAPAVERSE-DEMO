@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Sparkles, AdaptiveDpr, BakeShadows } from "@react-three/drei";
+import { Sparkles, BakeShadows } from "@react-three/drei";
 import {
   EffectComposer,
   Bloom,
@@ -11,6 +11,7 @@ import * as THREE from "three";
 import Pavilion from "./Pavilion";
 import Stand from "./Stand";
 import Player from "./Player";
+import { useFeria } from "../store";
 import { STATIONS, HALL_LENGTH } from "../data/feria";
 
 const FRONT_Z = 10;
@@ -18,10 +19,16 @@ const BACK_Z = FRONT_Z - HALL_LENGTH;
 const CENTER_Z = (FRONT_Z + BACK_Z) / 2;
 
 export default function Experience() {
+  const quality = useFeria((s) => s.quality);
+  const high = quality === "alto";
+
   return (
     <Canvas
-      shadows
-      dpr={[1, 1.8]}
+      // Remontamos el canvas al cambiar de calidad para reconfigurar sombras.
+      key={quality}
+      shadows={high}
+      // Alto: nítido hasta 2x. Rendimiento: tope más bajo para ganar FPS.
+      dpr={high ? [1, 2] : [1, 1.25]}
       gl={{
         antialias: false,
         powerPreference: "high-performance",
@@ -40,19 +47,19 @@ export default function Experience() {
         position={[6, 12, 8]}
         intensity={0.62}
         color="#dbe7ff"
-        castShadow
+        castShadow={high}
         shadow-mapSize={[1024, 1024]}
       />
       <directionalLight position={[-8, 9, -6]} intensity={0.3} color="#9fc0ff" />
 
       <Suspense fallback={null}>
-        <Pavilion />
+        <Pavilion highQuality={high} />
         {STATIONS.map((s) => (
           <Stand key={s.uid} station={s} />
         ))}
 
         <Sparkles
-          count={70}
+          count={high ? 70 : 28}
           scale={[12, 5, HALL_LENGTH]}
           position={[0, 3, CENTER_Z]}
           size={2}
@@ -60,23 +67,32 @@ export default function Experience() {
           opacity={0.4}
           color="#9fc0ff"
         />
-        <BakeShadows />
+        {high && <BakeShadows />}
       </Suspense>
 
       <Player />
 
-      <EffectComposer multisampling={0}>
-        <Bloom
-          intensity={0.55}
-          luminanceThreshold={0.65}
-          luminanceSmoothing={0.3}
-          mipmapBlur
-        />
-        <Vignette eskil={false} offset={0.35} darkness={0.5} />
-        <SMAA />
-      </EffectComposer>
-
-      <AdaptiveDpr pixelated />
+      {high ? (
+        <EffectComposer multisampling={0}>
+          <Bloom
+            intensity={0.55}
+            luminanceThreshold={0.65}
+            luminanceSmoothing={0.3}
+            mipmapBlur
+          />
+          <Vignette eskil={false} offset={0.35} darkness={0.5} />
+          <SMAA />
+        </EffectComposer>
+      ) : (
+        <EffectComposer multisampling={0}>
+          <Bloom
+            intensity={0.35}
+            luminanceThreshold={0.75}
+            luminanceSmoothing={0.25}
+          />
+          <Vignette eskil={false} offset={0.35} darkness={0.5} />
+        </EffectComposer>
+      )}
     </Canvas>
   );
 }

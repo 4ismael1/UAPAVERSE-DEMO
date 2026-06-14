@@ -82,10 +82,61 @@ function arrayBufferToBase64(buf: ArrayBuffer): string {
   return btoa(binary);
 }
 
+/** Amplifica (normaliza) la señal para que la voz suene clara aunque se haya
+ *  grabado bajita, sin saturar. Devuelve el pico aplicado. */
+function normalize(samples: Float32Array, maxGain = 12): Float32Array {
+  let peak = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const a = Math.abs(samples[i]);
+    if (a > peak) peak = a;
+  }
+  if (peak < 1e-4) return samples; // prácticamente silencio
+  const gain = Math.min(maxGain, 0.97 / peak);
+  if (gain <= 1.01) return samples;
+  const out = new Float32Array(samples.length);
+  for (let i = 0; i < samples.length; i++) {
+    out[i] = Math.max(-1, Math.min(1, samples[i] * gain));
+  }
+  return out;
+}
+
+function rmsOf(samples: Float32Array): number {
+  let sum = 0;
+  for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
+  return Math.sqrt(sum / Math.max(1, samples.length));
+}
+
+/**
+ * Codifica muestras PCM (Float32, capturadas en vivo con Web Audio) a WAV
+ * base64 16-bit mono. No usa decodeAudioData, así que no falla por contenedor.
+ */
+export function pcmToWavBase64(
+  samples: Float32Array,
+  inputRate: number,
+  targetRate = 16000
+): { base64: string; mimeType: string; durationSec: number; rms: number } {
+  const rate = Math.min(targetRate, inputRate);
+  const down = downsample(samples, inputRate, rate);
+  const rms = rmsOf(down);
+  const normalized = normalize(down);
+  const wav = encodeWav(normalized, rate);
+  return {
+    base64: arrayBufferToBase64(wav),
+    mimeType: "audio/wav",
+    durationSec: samples.length / inputRate,
+    rms,
+  };
+}
+
 export async function blobToWavBase64(
   blob: Blob,
   targetRate = 16000
-): Promise<{ base64: string; mimeType: string }> {
+): Promise<{
+  base64: string;
+  mimeType: string;
+  durationSec: number;
+  rms: number;
+}> {
   const arrayBuf = await blob.arrayBuffer();
   const ctx = getAudioContext();
   try {
@@ -93,11 +144,50 @@ export async function blobToWavBase64(
     const mono = downmixToMono(decoded);
     const rate = Math.min(targetRate, decoded.sampleRate);
     const samples = downsample(mono, decoded.sampleRate, rate);
-    const wav = encodeWav(samples, rate);
-    return { base64: arrayBufferToBase64(wav), mimeType: "audio/wav" };
+    const rms = rmsOf(samples);
+    const normalized = normalize(samples);
+    const wav = encodeWav(normalized, rate);
+    return {
+      base64: arrayBufferToBase64(wav),
+      mimeType: "audio/wav",
+      durationSec: decoded.duration,
+      rms,
+    };
   } finally {
     ctx.close();
   }
+}
+
+/** Envuelve PCM16 (base64, del TTS de Gemini) en un Blob WAV reproducible. */
+export function pcmBase64ToWavBlob(
+  base64: string,
+  sampleRate: number,
+  numChannels = 1
+): Blob {
+  const binary = atob(base64);
+  const pcm = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) pcm[i] = binary.charCodeAt(i);
+
+  const header = new ArrayBuffer(44);
+  const view = new DataView(header);
+  const writeStr = (offset: number, s: string) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i));
+  };
+  const byteRate = sampleRate * numChannels * 2;
+  writeStr(0, "RIFF");
+  view.setUint32(4, 36 + pcm.length, true);
+  writeStr(8, "WAVE");
+  writeStr(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, numChannels * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, "data");
+  view.setUint32(40, pcm.length, true);
+  return new Blob([header, pcm], { type: "audio/wav" });
 }
 
 /** Elige un mimeType soportado por MediaRecorder. */

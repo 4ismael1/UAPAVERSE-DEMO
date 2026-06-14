@@ -15,7 +15,7 @@ inmersiva tipo feria real.
 
 ---
 
-## ✨ Características
+## Características
 
 - **Recorrido 3D en primera persona** (WASD + ratón en PC, joystick táctil + arrastrar en móvil).
 - **Tour guiado** automático por paradas y **navegación rápida** por carrera.
@@ -26,14 +26,14 @@ inmersiva tipo feria real.
 - **Asistente de voz con IA ("ARI")** por stand: mantén pulsado para preguntar por voz y
   responde hablando, usando un modelo de **Google Gemini** con el contexto de cada stand.
 
-## 🧩 Carreras incluidas (ejemplo)
+## Carreras incluidas (ejemplo)
 
 - Ingeniería en Software
 - Informática Gerencial
 - Técnico en Agrimensura
 - Tecnologías de la Información (TIC)
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 - **React + TypeScript + Vite**
 - **React Three Fiber** + **drei** + **postprocessing** (Three.js)
@@ -42,7 +42,7 @@ inmersiva tipo feria real.
 
 ---
 
-## 🚀 Cómo ejecutarlo
+## Cómo ejecutarlo
 
 ```bash
 # 1. Instalar dependencias
@@ -66,13 +66,13 @@ npm run build
 | `VITE_GEMINI_API_KEY` | Clave de Google AI Studio (Gemini) para el asistente de voz. |
 | `VITE_GEMINI_MODEL` | Modelo a usar (por defecto `gemini-2.5-flash`). |
 
-> ⚠️ **Seguridad:** al ser una app web, la clave viaja al navegador y es visible para el
+> **Seguridad:** al ser una app web, la clave viaja al navegador y es visible para el
 > usuario. Úsala **solo para demo/pruebas**. El archivo `.env` está en `.gitignore` y no
 > se sube al repositorio.
 
 ---
 
-## 📁 Dónde editar el contenido
+## Dónde editar el contenido
 
 Todo el contenido de la feria (carreras, descripciones, pensums, proyectos, videos e
 imágenes) vive en un único archivo, sin tener que tocar la escena 3D:

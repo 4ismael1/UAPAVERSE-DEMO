@@ -262,7 +262,7 @@ export default function Stand({ station }: { station: Station }) {
   const isCarrera = station.kind === "carrera";
   const W = isCarrera ? 8.6 : 7.0;
   const D = 4.6;
-  const H = 3.6;
+  const H = 3.95;
   const col = station.color;
   const accent = station.accent;
 
@@ -370,6 +370,35 @@ export default function Stand({ station }: { station: Station }) {
           <meshStandardMaterial color="#163055" roughness={0.8} metalness={0.1} />
         </mesh>
       ))}
+
+      {/* ===== TECHO ===== */}
+      <RoundedBox
+        args={[W + 0.2, 0.16, D - 0.2]}
+        radius={0.05}
+        smoothness={3}
+        position={[0, H + 0.04, -0.2]}
+        castShadow
+      >
+        <meshStandardMaterial color="#13203c" roughness={0.65} metalness={0.3} />
+      </RoundedBox>
+      {/* moldura de acento bajo el borde frontal del techo */}
+      <mesh position={[0, H - 0.12, pillarZ - 0.02]}>
+        <boxGeometry args={[W, 0.04, 0.06]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      {/* plafón de luz interior (mira hacia abajo), separado del techo */}
+      <mesh position={[0, H - 0.16, -0.2]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[W - 1.0, D - 1.4]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          emissive="#dce8ff"
+          emissiveIntensity={0.6}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* luz interior que cuelga del techo */}
+      <pointLight position={[0, H - 0.5, -0.1]} color="#eaf1ff" intensity={0.5} distance={7} decay={2} />
 
       {/* ===== PILARES FRONTALES ===== */}
       {[-1, 1].map((s) => (

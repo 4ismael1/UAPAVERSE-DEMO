@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { Station } from "./data/feria";
 
 export type Phase = "intro" | "running";
+export type Quality = "alto" | "rendimiento";
 
 interface MoveState {
   forward: number; // -1..1
@@ -24,6 +25,13 @@ interface FeriaState {
   // Audio ambiente
   audioOn: boolean;
   toggleAudio: () => void;
+  volume: number; // 0..1
+  setVolume: (v: number) => void;
+
+  // Calidad de gráficos
+  quality: Quality;
+  setQuality: (q: Quality) => void;
+  toggleQuality: () => void;
 
   // Tour guiado
   tourActive: boolean;
@@ -47,7 +55,9 @@ interface FeriaState {
 
 export const useFeria = create<FeriaState>((set, get) => ({
   phase: "intro",
-  enter: () => set({ phase: "running" }),
+  // Al entrar arrancamos la música (el clic cuenta como gesto del usuario,
+  // requisito de los navegadores para reproducir audio).
+  enter: () => set({ phase: "running", audioOn: true }),
 
   activeStation: null,
   openStation: (p) => set({ activeStation: p }),
@@ -60,6 +70,13 @@ export const useFeria = create<FeriaState>((set, get) => ({
 
   audioOn: false,
   toggleAudio: () => set((s) => ({ audioOn: !s.audioOn })),
+  volume: 0.22,
+  setVolume: (v) => set({ volume: Math.max(0, Math.min(1, v)) }),
+
+  quality: "alto",
+  setQuality: (q) => set({ quality: q }),
+  toggleQuality: () =>
+    set((s) => ({ quality: s.quality === "alto" ? "rendimiento" : "alto" })),
 
   tourActive: false,
   tourIndex: 0,

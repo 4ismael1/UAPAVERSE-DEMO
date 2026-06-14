@@ -56,6 +56,10 @@ export default function Player() {
         const near = useFeria.getState().nearbyStand;
         if (near) useFeria.getState().openStation(near);
       }
+      // ESC cierra el modal (el re-bloqueo del puntero lo gestiona el efecto).
+      if (e.code === "Escape" && useFeria.getState().activeStation) {
+        useFeria.getState().closeStation();
+      }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       keys.current[e.code] = false;
@@ -233,13 +237,24 @@ export default function Player() {
     camera.rotation.set(pitch.current, yaw.current, 0, "YXZ");
   });
 
-  // salir del pointer lock cuando hay un modal abierto
+  // Gestión del puntero al abrir/cerrar el modal:
+  //  - al abrir: liberamos el ratón para interactuar con el panel.
+  //  - al cerrar: en escritorio volvemos a bloquearlo para seguir caminando.
   const activeStation = useFeria((s) => s.activeStation);
+  const prevActive = useRef(false);
   useEffect(() => {
-    if (activeStation && document.pointerLockElement) {
-      document.exitPointerLock?.();
+    const canvas = gl.domElement;
+    const finePointer =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(pointer: fine)").matches;
+    if (activeStation) {
+      if (document.pointerLockElement) document.exitPointerLock?.();
+    } else if (prevActive.current && finePointer) {
+      // modal recién cerrado: reactivar el bloqueo del puntero
+      canvas.requestPointerLock?.();
     }
-  }, [activeStation]);
+    prevActive.current = !!activeStation;
+  }, [activeStation, gl]);
 
   void HALL_WIDTH;
   void tourActive;

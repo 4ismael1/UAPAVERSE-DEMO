@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useFeria } from "../store";
 import { CARRERA_STATIONS, FERIA } from "../data/feria";
+import { IconSpeaker, IconSpeakerMuted } from "./icons";
 
 export default function Hud() {
   const nearby = useFeria((s) => s.nearbyStand);
@@ -8,6 +9,10 @@ export default function Hud() {
   const goToStand = useFeria((s) => s.goToStand);
   const audioOn = useFeria((s) => s.audioOn);
   const toggleAudio = useFeria((s) => s.toggleAudio);
+  const volume = useFeria((s) => s.volume);
+  const setVolume = useFeria((s) => s.setVolume);
+  const quality = useFeria((s) => s.quality);
+  const toggleQuality = useFeria((s) => s.toggleQuality);
   const startTour = useFeria((s) => s.startTour);
   const tourActive = useFeria((s) => s.tourActive);
   const activeStation = useFeria((s) => s.activeStation);
@@ -37,12 +42,32 @@ export default function Hud() {
             ▶ Tour guiado
           </button>
           <button
-            onClick={toggleAudio}
-            aria-label="Audio"
-            className="glass rounded-2xl px-3.5 py-2.5 text-sm text-white transition hover:bg-white/15"
+            onClick={toggleQuality}
+            title="Calidad de gráficos"
+            className="glass rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-white transition hover:bg-white/15"
           >
-            {audioOn ? "🔊" : "🔈"}
+            {quality === "alto" ? "✦ Gráficos: Máximo" : "⚡ Rendimiento"}
           </button>
+          <div className="glass flex items-center gap-2 rounded-2xl px-3 py-2.5">
+            <button
+              onClick={toggleAudio}
+              aria-label="Audio"
+              className="flex items-center text-white transition hover:text-uapa-sky"
+            >
+              {audioOn ? <IconSpeaker size={18} /> : <IconSpeakerMuted size={18} />}
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              aria-label="Volumen de la música"
+              title="Volumen de la música"
+              className="volume-slider h-1.5 w-20 cursor-pointer appearance-none rounded-full bg-white/20 accent-uapa-sky"
+            />
+          </div>
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import Joystick from "./ui/Joystick";
 import TourControls from "./ui/TourControls";
 import StationModal from "./ui/StationModal";
 import LoadingScreen from "./ui/LoadingScreen";
+import WelcomeOverlay from "./ui/WelcomeOverlay";
 import { useAmbientAudio } from "./ui/useAmbientAudio";
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           <Joystick />
           <TourControls />
           <StationModal />
+          <WelcomeOverlay />
         </>
       )}
 
