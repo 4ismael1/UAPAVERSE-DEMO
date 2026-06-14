@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Text, MeshReflectorMaterial } from "@react-three/drei";
+import { Text, MeshReflectorMaterial, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import {
   HALL_LENGTH,
@@ -13,6 +13,43 @@ const BACK_Z = FRONT_Z - HALL_LENGTH;
 const CENTER_Z = (FRONT_Z + BACK_Z) / 2;
 const HW = HALL_WIDTH / 2;
 const CEIL = 6.2;
+
+// Logo de la UAPA (PNG con letras blancas, fondo transparente) sobre la pared.
+function LogoSign({
+  position,
+  rotation = [0, 0, 0],
+  height = 1.6,
+  maxWidth = Infinity,
+}: {
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  height?: number;
+  maxWidth?: number;
+}) {
+  const tex = useTexture(`${import.meta.env.BASE_URL}logo.png`);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  const img = tex.image as { width: number; height: number } | undefined;
+  const aspect = img && img.height ? img.width / img.height : 4;
+  let h = height;
+  let w = h * aspect;
+  if (w > maxWidth) {
+    w = maxWidth;
+    h = w / aspect;
+  }
+  return (
+    <mesh position={position} rotation={rotation}>
+      <planeGeometry args={[w, h]} />
+      <meshBasicMaterial
+        map={tex}
+        transparent
+        alphaTest={0.02}
+        toneMapped={false}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
 
 function CeilingLights() {
   const rows = useMemo(() => {
@@ -177,17 +214,11 @@ export default function Pavilion({
         <planeGeometry args={[HALL_WIDTH, CEIL]} />
         <meshStandardMaterial color="#141f38" roughness={0.9} />
       </mesh>
-      <Text
-        position={[0, CEIL / 2 + 0.4, BACK_Z + 0.1]}
-        fontSize={0.7}
-        anchorX="center"
-        anchorY="middle"
-        color="#16314f"
+      <LogoSign
+        position={[0, CEIL / 2 + 0.3, BACK_Z + 0.08]}
+        height={1.7}
         maxWidth={HALL_WIDTH - 3}
-        textAlign="center"
-      >
-        UAPA · INGENIERÍA Y TECNOLOGÍA
-      </Text>
+      />
 
       {/* ===== ENTRADA (pared frontal con título) ===== */}
       <mesh position={[0, CEIL / 2, FRONT_Z]} rotation={[0, Math.PI, 0]}>
@@ -195,22 +226,14 @@ export default function Pavilion({
         <meshStandardMaterial color="#141f38" roughness={0.9} />
       </mesh>
       <group position={[0, 0, FRONT_Z - 0.12]}>
-        <Text
-          position={[0, 4.4, 0]}
+        <LogoSign
+          position={[0, 4.2, 0]}
           rotation={[0, Math.PI, 0]}
-          fontSize={0.85}
-          anchorX="center"
-          anchorY="middle"
-          color="#ffffff"
-          outlineWidth={0.012}
-          outlineColor="#1d6fd6"
+          height={1.9}
           maxWidth={HALL_WIDTH - 2}
-          textAlign="center"
-        >
-          {FERIA.title.toUpperCase()}
-        </Text>
+        />
         <Text
-          position={[0, 3.5, 0]}
+          position={[0, 3.0, 0]}
           rotation={[0, Math.PI, 0]}
           fontSize={0.32}
           anchorX="center"
