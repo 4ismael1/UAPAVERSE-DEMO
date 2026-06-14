@@ -4,11 +4,16 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Station } from "../data/feria";
 import { useFeria } from "../store";
+import { playerState } from "./playerState";
 import {
   makeImageTexture,
   makeVideoTexture,
   makeBannerTexture,
 } from "./textures";
+
+// Distancia (en metros del mundo) desde la que se puede abrir un stand con
+// clic. Suficiente para hacerlo desde el pasillo central / la alfombra.
+const CLICK_DIST = 8.5;
 
 // ===================================================================
 //  PANTALLA ENMARCADA  (bisel redondeado + retroiluminación + borde)
@@ -278,7 +283,18 @@ export default function Stand({ station }: { station: Station }) {
   const trimMat = useRef<THREE.MeshStandardMaterial | null>(null);
   const light = useRef<THREE.PointLight>(null);
 
+  // Se puede abrir con clic si el jugador está dentro de CLICK_DIST.
+  const [canOpen, setCanOpen] = useState(false);
+  const canOpenRef = useRef(false);
+
   useFrame((state) => {
+    const dx = playerState.x - station.position[0];
+    const dz = playerState.z - station.position[2];
+    const within = dx * dx + dz * dz < CLICK_DIST * CLICK_DIST;
+    if (within !== canOpenRef.current) {
+      canOpenRef.current = within;
+      setCanOpen(within);
+    }
     if (trimMat.current) {
       const c = new THREE.Color(accent);
       trimMat.current.color.copy(c);
@@ -340,7 +356,7 @@ export default function Stand({ station }: { station: Station }) {
       >
         <meshStandardMaterial color="#131f38" roughness={0.5} metalness={0.4} />
       </RoundedBox>
-      <mesh position={[0, 0.185, 0.25]} receiveShadow>
+      <mesh position={[0, 0.2, 0.25]} receiveShadow>
         <boxGeometry args={[W - 0.4, 0.02, D - 0.9]} />
         <meshStandardMaterial color={col} emissive={col} emissiveIntensity={0.12} roughness={0.85} />
       </mesh>
@@ -499,7 +515,7 @@ export default function Stand({ station }: { station: Station }) {
             height={1.7}
             position={[-W / 4 - 0.1, 1.6, ZW]}
             accent={accent}
-            canOpen={isNear}
+            canOpen={canOpen}
             onOpen={open}
             onHover={setHovered}
           />
@@ -595,7 +611,7 @@ export default function Stand({ station }: { station: Station }) {
             height={1.7}
             position={[-W / 4 - 0.1, 1.95, ZW]}
             accent={accent}
-            canOpen={isNear}
+            canOpen={canOpen}
             onOpen={open}
             onHover={setHovered}
           />
@@ -661,7 +677,7 @@ export default function Stand({ station }: { station: Station }) {
       <mesh
         position={[0, 1.4, D / 2 + 0.12]}
         onClick={(e) => {
-          if (!isNear) return; // deja pasar el clic para bloquear el puntero
+          if (!canOpen) return; // deja pasar el clic para bloquear el puntero
           e.stopPropagation();
           open();
         }}

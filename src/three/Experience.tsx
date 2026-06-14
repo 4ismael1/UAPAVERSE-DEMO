@@ -35,7 +35,7 @@ export default function Experience() {
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1.12,
       }}
-      camera={{ fov: 70, near: 0.1, far: 200, position: [0, 1.65, 7] }}
+      camera={{ fov: 70, near: 0.3, far: 160, position: [0, 1.65, 7] }}
     >
       <color attach="background" args={["#080f20"]} />
       <fog attach="fog" args={["#080f20", 24, 82]} />

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useFeria } from "../store";
-import { CARRERA_STATIONS, FERIA } from "../data/feria";
+import { CARRERA_STATIONS } from "../data/feria";
 import { IconSpeaker, IconSpeakerMuted } from "./icons";
 
 export default function Hud() {
@@ -22,16 +22,7 @@ export default function Hud() {
   return (
     <>
       {/* ====== barra superior ====== */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between gap-3 p-3 sm:p-4">
-        <div className="glass pointer-events-auto rounded-2xl px-4 py-2.5">
-          <div className="text-[10px] font-semibold tracking-widest text-uapa-sky">
-            {FERIA.school.toUpperCase()}
-          </div>
-          <div className="font-display text-sm font-bold text-white">
-            UAPAverse · UAPA
-          </div>
-        </div>
-
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-end gap-3 p-3 sm:p-4">
         <div className="pointer-events-auto flex items-center gap-2">
           <button
             onClick={startTour}
